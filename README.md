@@ -71,6 +71,18 @@ recalibration when the view changes.
 Try the [axes and zoom notebook](examples/axes.ipynb) or run
 `python examples/desktop.py` to explore the original synthetic data interactively.
 
+## Manual desktop session
+
+For a minimal desktop test with three ordinary curves, run:
+
+```bash
+.venv/bin/python examples/manual_desktop.py
+```
+
+The example uses 200 samples per curve and keeps x fixed. Closing the window
+saves the points to `examples/simple-points.yaml`. See the
+[short guide](examples/MANUAL_TEST.md) for shortcuts.
+
 ## Start with an image file
 
 ```python
@@ -110,6 +122,16 @@ The image and future points now share the calibrated coordinates. Calibration
 does not estimate uncertainty: sigma is entered separately in the final y units.
 
 ## Use in Jupyter
+
+For a **separate desktop window on macOS**, open the minimal
+[three-curve notebook](examples/window.ipynb) and select the repository's
+`.venv/bin/python` kernel (install `ipykernel` in that environment if needed).
+It uses `%matplotlib osx` and `use_widgets=False`; the notebook remains available
+while you select points in the native window. Run the later cells to inspect
+and save the points. This requires a local kernel with access to your desktop.
+Restart the kernel before switching from another backend.
+
+For an embedded interactive figure, use the widget workflow below.
 
 Run this before creating figures:
 
