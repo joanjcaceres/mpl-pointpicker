@@ -36,7 +36,7 @@ class Form:
         self._closed = False
         self._notebook = False
         choices = choices or {}
-        notebook = _notebook_widgets() if picker._prefer_widgets else None
+        notebook = _notebook_widgets() if picker._form_host is not None else None
         if notebook:
             self._notebook = True
             widgets, display = notebook
@@ -60,7 +60,7 @@ class Form:
                     self._feedback,
                 ]
             )
-            display(self._box)
+            picker._form_host.children = (self._box,)
         else:
             fig = picker.ax.figure
             self._positions = [(ax, ax.get_position().frozen()) for ax in fig.axes]
@@ -134,6 +134,8 @@ class Form:
             return
         self._closed = True
         if self._box is not None:
+            if self.picker._form_host.children == (self._box,):
+                self.picker._form_host.children = ()
             # Closing the parent alone does not release child comms.
             for child in self._fields.values():
                 child.close()

@@ -70,6 +70,29 @@ def test_axis_lock_and_next_column():
     picker.disconnect()
 
 
+def test_original_heatmap_zoom_retains_data_and_exact_column():
+    x = np.linspace(0, 5, 201)
+    y = np.linspace(-1, 1, 201)
+    signal = np.sin(x[None, :]) * np.cos(y[:, None])
+    _, ax = plt.subplots()
+    original = ax.pcolormesh(x, y, signal, shading="auto")
+    picker = PointPicker(ax, axis_lock=True, use_widgets=False)
+    click(picker, 2.5, 0)
+    fixed = picker.x_coords[0]
+    # Zooming the viewport leaves the original QuadMesh and data in place.
+    ax.set(xlim=(2.49, 2.51), ylim=(-0.01, 0.01))
+    click(picker, 2.507, 0.007)
+    assert picker.x_coords[1] == fixed
+    np.testing.assert_allclose(picker.y_coords, [0, 0.007], atol=1e-12)
+    assert ax.collections[0] is original
+    np.testing.assert_allclose(original.get_array(), signal)
+    key(picker, "m")
+    click(picker, fixed, 0.007)
+    click(picker, 2.495, -0.005, "motion_notify_event")
+    assert picker.x_coords[1] == fixed
+    np.testing.assert_allclose(picker.y_coords[1], -0.005)
+
+
 def test_series_transitions_unlabeled_and_legacy_defaults(tmp_path):
     _, ax = plt.subplots()
     picker = PointPicker(ax, use_widgets=False)
@@ -190,3 +213,18 @@ def test_import_does_not_change_global_keymaps():
     before = dict(matplotlib.rcParams)
     importlib.reload(module)
     assert dict(matplotlib.rcParams) == before
+
+
+def test_windows_console_encoding(monkeypatch):
+    import io
+    import sys
+
+    output = io.TextIOWrapper(io.BytesIO(), encoding="cp1252")
+    monkeypatch.setattr(sys, "stdout", output)
+    _, ax = plt.subplots()
+    picker = PointPicker(ax, use_widgets=False, axis_lock=True)
+    picker._add_point(1, 2)
+    picker.tag_point(0, "測定", 0.1)
+    picker._inspect_point(0)
+    picker.view_points()
+    output.flush()

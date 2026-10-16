@@ -1,6 +1,9 @@
 # mpl-pointpicker
 
-Select, move and label points on Matplotlib plots or PNG/JPG images. Recover
+Attach directly to your original Matplotlib axes: zoom into the underlying data,
+select fine details, and keep x fixed while picking a column. No intermediate
+screenshots or cropped image files are needed. PNG/JPG digitization is also
+available as a separate workflow. Recover
 coordinates as NumPy arrays or dictionaries grouped by a series name or a
 transition `(i, j)`, with optional uncertainty in y.
 
@@ -27,7 +30,48 @@ The GitHub release also includes a wheel and a source archive, installable with
 `python -m pip install <downloaded-file>`. A plain `pip install mpl-pointpicker`
 will become available after publication to PyPI.
 
-## Start with an image
+## Start with your original Matplotlib data
+
+Pass the same `ax` used to display your measurement data. Existing image arrays,
+`pcolormesh` heatmaps, curves, contours and overlays stay in the figure. Their
+coordinates are already defined, so **no calibration is needed**.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_pointpicker import PointPicker
+
+# Replace this synthetic dataset with your original x, y and measured signal.
+x = np.linspace(0, 1, 2001)
+y = np.linspace(2, 8, 801)
+ridge = 4 + np.cos(2 * np.pi * x)
+signal = np.exp(-((y[:, None] - ridge[None, :]) / 0.025) ** 2)
+
+fig, ax = plt.subplots()
+ax.pcolormesh(x, y, signal, shading="auto")
+ax.set(xlabel="Control parameter", ylabel="Frequency (GHz)")
+picker = PointPicker(ax, axis_lock=True)
+plt.show()
+
+data = picker.to_transition_data(include_sigma=True)
+```
+
+Use the **Matplotlib zoom/pan toolbar** to inspect a small region, then deactivate
+the toolbar tool before selecting points. The picker continues to use the
+original data coordinates at every zoom level. It does not turn your axes into
+a screenshot. Resolution is determined by the original data, rather than a
+previously saved image's screen resolution.
+
+With `axis_lock=True`, the first point fixes the current column's x coordinate.
+Later points use that exact x even after zooming or panning; dragging a point
+changes only y. Press **n** for a new column, or click an existing point in Add
+mode to reuse its x. The lock operates in data units and does not require
+recalibration when the view changes.
+
+Try the [axes and zoom notebook](examples/axes.ipynb) or run
+`python examples/desktop.py` to explore the original synthetic data interactively.
+
+## Start with an image file
 
 ```python
 import matplotlib.pyplot as plt
@@ -84,9 +128,10 @@ image and is unsuitable for picking. Use the notebook extra above, and restart
 the kernel after installing it. `use_widgets=False` uses Matplotlib forms even
 inside a notebook.
 
-Try the guided [notebook](examples/quickstart.ipynb) or run
-`python examples/desktop.py` for a bundled synthetic graph. The desktop example
-also accepts an image filename: `python examples/desktop.py graph.png`.
+For the image-file workflow, try the guided
+[image calibration notebook](examples/quickstart.ipynb), or run
+`python examples/desktop.py graph.png`. Choose the axes workflow above whenever
+you have the original measurement arrays or a prepared Matplotlib figure.
 
 ## Select and edit
 

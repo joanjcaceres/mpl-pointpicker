@@ -23,6 +23,8 @@ def test_notebook_tag_submit_validation_and_shortcuts(notebook):
     picker._tag_ui.show(0)
     form = picker._tag_ui._form
     assert len(notebook) == 1
+    assert notebook[0] is picker._form_host
+    assert picker._form_host.children == (form._box,)
     form._fields["Type"].value = "Series"
     form._fields["Label"].value = "measurement A"
     form._fields["Sigma (y units)"].value = "nan"
@@ -35,6 +37,7 @@ def test_notebook_tag_submit_validation_and_shortcuts(notebook):
     form._submit()
     assert picker.to_dict() == {"measurement A": [(1.0, 2.0, 0.2)]}
     assert form._closed
+    assert picker._form_host.children == ()
     key(picker, "m")
     assert picker.mode == "move"
 

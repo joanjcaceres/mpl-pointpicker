@@ -71,6 +71,17 @@ class PointPicker:
 
         # Tagging UI (ipywidgets when available, fallback to matplotlib controls)
         self._prefer_widgets = bool(use_widgets)
+        self._form_host = None
+        if self._prefer_widgets:
+            # Widget callbacks have no cell output area in JupyterLab. Display
+            # a persistent host now, while constructing the picker in a cell.
+            from ._forms import _notebook_widgets
+
+            notebook = _notebook_widgets()
+            if notebook:
+                widgets, display = notebook
+                self._form_host = widgets.VBox()
+                display(self._form_host)
         self._tag_ui: BaseTagUI = create_tag_ui(self, prefer_widgets=self._prefer_widgets)
 
         # Axis‑lock configuration
@@ -178,10 +189,10 @@ class PointPicker:
 
         if current_label is not None:
             print(
-                f"Point #{idx} at ({x:.2f}, {y:.2f}) → labeled as {current_label!r}, sigma={self.sigmas[idx]}"
+                f"Point #{idx} at ({x:.2f}, {y:.2f}) -> labeled as {ascii(current_label)}, sigma={self.sigmas[idx]}"
             )
         else:
-            print(f"Point #{idx} at ({x:.2f}, {y:.2f}) → unlabeled")
+            print(f"Point #{idx} at ({x:.2f}, {y:.2f}) -> unlabeled")
 
     # Note: _terminal_tag_input removed to avoid blocking matplotlib interaction
     # Tag mode now delegates to an environment-specific UI (ipywidgets or matplotlib)
@@ -213,7 +224,7 @@ class PointPicker:
                 if self.axis_lock:
                     self._fixed_x = self.points[idx, 0]
                     self._update_vline(self._fixed_x)
-                    print(f"Column at x={self._fixed_x:.2f} re‑selected; add more points.")
+                    print(f"Column at x={self._fixed_x:.2f} re-selected; add more points.")
 
         elif self.mode == "delete":
             if idx is not None:
@@ -311,8 +322,9 @@ class PointPicker:
     # ------------------------------------------------------------------
     def _update_title(self):
         self.ax.set_title(
-            f"Mode: {self.mode}   |   keys → a:Add  m:Move  d:Delete  t:Tag  i:Inspect   (Esc returns to Add)",
-            fontsize=9,
+            f"Mode: {self.mode} | a:Add  m:Move  d:Delete  t:Tag  i:Inspect\n"
+            + ("Esc:Add | n:New column" if self.axis_lock else "Esc:Add"),
+            fontsize=8,
         )
         self.ax.figure.canvas.draw_idle()
 
@@ -345,7 +357,7 @@ class PointPicker:
         self._markers.append(marker)
         self._set_marker_color(len(self._markers) - 1)
         self.ax.figure.canvas.draw_idle()
-        print(f"Added → ({x:.2f}, {y:.2f})")
+        print(f"Added -> ({x:.2f}, {y:.2f})")
 
     def _remove_point(self, idx: int):
         # Remove point from array and marker
@@ -393,6 +405,8 @@ class PointPicker:
         canvas = self.ax.figure.canvas
         for cid in self._cids:
             canvas.mpl_disconnect(cid)
+        if self._form_host is not None:
+            self._form_host.close()
 
     @property
     def xy(self) -> np.ndarray:
@@ -440,7 +454,7 @@ class PointPicker:
         """Print all points, including unlabelled points."""
         print("Idx | Label | x | y | sigma")
         for idx, ((x, y), label, sigma) in enumerate(zip(self.points, self.labels, self.sigmas)):
-            print(f"{idx} | {label!r} | {x:g} | {y:g} | {sigma}")
+            print(f"{idx} | {ascii(label)} | {x:g} | {y:g} | {sigma}")
 
     def to_transition_data(self, *, include_sigma: bool = False, x_scale: float = 1.0) -> PointDict:
         """Return only integer-pair transition groups, suitable for a fitter."""
