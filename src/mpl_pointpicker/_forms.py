@@ -71,7 +71,7 @@ class Form:
                 ax.set_position(
                     [position.x0, 0.28 + 0.72 * position.y0, position.width, position.height * 0.72]
                 )
-            self._heading = fig.text(0.08, 0.245, title, fontsize=9)
+            self._heading = fig.text(0.08, 0.265, title, fontsize=9)
             self._feedback = fig.text(0.08, 0.015, "", fontsize=8, color="crimson")
             width = 0.82 / len(fields)
             for index, (name, value) in enumerate(fields.items()):
