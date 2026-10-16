@@ -13,22 +13,32 @@ SCCircuits, SciPy or SymPy.
 
 ## Install
 
-Version 0.1.0 is distributed through GitHub while the first PyPI publication is
-being prepared. Install from the fixed release tag:
+Install from PyPI (Python 3.11 or newer):
+
+```bash
+python -m pip install mpl-pointpicker
+```
+
+For an interactive figure embedded in Jupyter Notebook, JupyterLab or VS Code:
+
+```bash
+python -m pip install "mpl-pointpicker[notebook]"
+```
+
+For a local notebook with a separate desktop window, install `ipykernel` in the
+same Python environment and use the native backend shown in the
+[three-curve notebook](examples/window.ipynb). That workflow uses Matplotlib
+forms and does not need the embedded-widget extra.
+
+For a reproducible installation, pin `mpl-pointpicker==0.1.0`. The fixed GitHub
+release remains available as an alternative:
 
 ```bash
 python -m pip install "mpl-pointpicker @ git+https://github.com/joanjcaceres/mpl-pointpicker.git@v0.1.0"
 ```
 
-For Jupyter Notebook, JupyterLab or VS Code notebooks:
-
-```bash
-python -m pip install "mpl-pointpicker[notebook] @ git+https://github.com/joanjcaceres/mpl-pointpicker.git@v0.1.0"
-```
-
-The GitHub release also includes a wheel and a source archive, installable with
-`python -m pip install <downloaded-file>`. A plain `pip install mpl-pointpicker`
-will become available after publication to PyPI.
+The [GitHub release](https://github.com/joanjcaceres/mpl-pointpicker/releases/tag/v0.1.0)
+also includes the published wheel and source archive.
 
 ## Start with your original Matplotlib data
 
